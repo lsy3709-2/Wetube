@@ -49,8 +49,8 @@ def create_app():
     # Windows에서 백슬래시가 URI로 잘못 해석되지 않도록 슬래시로 통일
     default_db_uri = "sqlite:///" + os.path.normpath(default_db_path).replace("\\", "/")
     app.config.from_mapping(
-        # 세션·flash·CSRF 등 서명용. 개발/프론트 전용이라 고정값 사용. 운영에서는 환경변수 등으로 강한 랜덤 키 사용 필수.
-        SECRET_KEY="dev-frontend-only",
+        # 세션·flash·CSRF 등 서명용. .env의 SECRET_KEY 사용, 없으면 개발용 고정값.
+        SECRET_KEY=os.environ.get("SECRET_KEY", "dev-frontend-only"),
         # DB: 환경변수 DATABASE_URL 없으면 SQLite (instance/wetube.db)
         SQLALCHEMY_DATABASE_URI=os.environ.get("DATABASE_URL", default_db_uri),
         # 모델 속성 변경 추적 비활성화. True면 변경 시 before_commit 등 이벤트 발생·오버헤드 있음. 불필요하면 False 권장.

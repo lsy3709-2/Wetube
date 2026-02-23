@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}데이터베이스 관리 - 관리자 - WeTube{% endblock %}
+
+{% block content %}
+  <div class="admin-page admin-database-page">
+    <div class="admin-header">
+      <div class="admin-header-left">
+        <a href="{{ url_for('admin.index') }}" class="admin-back-link">← 관리자 대시보드</a>
+        <h1 class="admin-title">데이터베이스 관리</h1>
+      </div>
+      <div class="admin-header-actions">
+        <button type="button" class="btn btn--outline" id="btn-backup">백업</button>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn--outline">로그아웃</a>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <div class="db-layout">
+        <!-- 테이블 목록 -->
+        <aside class="db-sidebar">
+          <h3 class="db-sidebar-title">테이블 목록</h3>
+          <ul class="db-table-list">
+            <li><a href="{{ url_for('admin.table_view', table_name='user') }}" class="db-table-link">users</a></li>
+            <li><a href="{{ url_for('admin.table_view', table_name='video') }}" class="db-table-link">videos</a></li>
+            <li><a href="{{ url_for('admin.table_view', table_name='comment') }}" class="db-table-link">comments</a></li>
+            <li><a href="{{ url_for('admin.table_view', table_name='channel') }}" class="db-table-link">channel</a></li>
+            <li><a href="{{ url_for('admin.table_view', table_name='subscription') }}" class="db-table-link">subscription</a></li>
+          </ul>
+        </aside>
+
+        <!-- 메인 영역 -->
+        <div class="db-main">
+          <!-- 선택된 테이블 정보 -->
+          <div class="db-section">
+            <h3 class="db-section-title">테이블: <span id="selected-table-name">user</span></h3>
+            <div class="admin-table-wrap">
+              <table class="admin-table db-preview-table">
+                <thead>
+                  <tr>
+                    <th>컬럼명</th>
+                    <th>타입</th>
+                    <th>키</th>
+                    <th>Null</th>
+                  </tr>
+                </thead>
+                <tbody id="db-table-structure">
+                  <tr><td>id</td><td>INT</td><td>PK</td><td>NO</td></tr>
+                  <tr><td>username</td><td>VARCHAR(50)</td><td>-</td><td>NO</td></tr>
+                  <tr><td>email</td><td>VARCHAR(100)</td><td>-</td><td>YES</td></tr>
+                  <tr><td>password_hash</td><td>VARCHAR(255)</td><td>-</td><td>NO</td></tr>
+                  <tr><td>created_at</td><td>DATETIME</td><td>-</td><td>NO</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SQL 쿼리 실행 -->
+          <div class="db-section">
+            <h3 class="db-section-title">SQL 쿼리</h3>
+            <p class="admin-msg-text">Query 문을 실행하려면 전용 페이지로 이동하세요.</p>
+            <a href="{{ url_for('admin.query') }}" class="btn btn--primary">Query 실행 페이지</a>
+          </div>
+
+          <!-- API·DB 검증 -->
+          <div class="db-section">
+            <h3 class="db-section-title">API·DB 검증</h3>
+            <p class="admin-msg-text">REST API 연동 및 테스트 전/후 DB 비교.</p>
+            <a href="{{ url_for('admin.api_preview') }}" class="btn btn--outline">API 미리보기</a>
+            <a href="{{ url_for('admin.db_verify') }}" class="btn btn--outline">DB 검증 리포트</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/admin-database-page.js') }}"></script>
+{% endblock %}

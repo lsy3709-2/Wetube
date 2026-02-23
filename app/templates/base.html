@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}WeTube{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+</head>
+<body class="{% if current_user.is_authenticated %}is-logged-in{% endif %}{% if current_user.is_authenticated and current_user.is_admin %} is-admin{% endif %}">
+  <header class="header {% block header_class %}header--with-sidebar{% endblock %}" id="main-header">
+    <a href="{{ url_for('main.index') }}" class="logo">WeTube</a>
+    <form class="search-wrap" method="get" action="{{ url_for('main.search') }}">
+      <input type="search" name="q" class="search-input" placeholder="검색" aria-label="검색" value="{{ request.args.get('q', '') }}">
+      <button type="submit" class="search-btn" aria-label="검색">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      </button>
+    </form>
+    <div class="header-actions">
+      <div data-logged-out-only>
+        <a href="{{ url_for('auth.login') }}" class="btn btn--outline">로그인</a>
+        <a href="{{ url_for('auth.register') }}" class="btn btn--primary">회원가입</a>
+      </div>
+      <div data-logged-in-only>
+        <a href="{{ url_for('studio.index') }}" class="btn btn--outline">Studio</a>
+        <a href="{{ url_for('main.subscriptions') }}" class="btn btn--outline">구독</a>
+        <a href="{{ url_for('admin.index') }}" class="btn btn--icon" data-admin-only title="관리자" style="{% if not (current_user.is_authenticated and current_user.is_admin) %}display: none;{% endif %}">🛡️</a>
+        <button type="button" class="btn btn--icon" title="알림">🔔</button>
+        <span class="header-email" title="{{ current_user.email }}">{{ current_user.email }}</span>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn--outline btn--small header-logout-btn" title="로그아웃">로그아웃</a>
+        <a href="{{ url_for('auth.profile') }}" class="avatar" id="btn-avatar" title="마이페이지">
+          {% if current_user.is_authenticated and current_user.get_profile_image_url() %}
+          <img src="{{ current_user.get_profile_image_url() }}" alt="" class="avatar-img">
+          {% else %}
+          <span id="header-username">{{ (current_user.username or '')[0:1]|upper }}</span>
+          {% endif %}
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="{{ url_for('main.index') }}"><span class="icon">🏠</span> 홈</a></li>
+        <li><a href="#"><span class="icon">▶</span> Shorts</a></li>
+        <li><a href="{{ url_for('main.subscriptions') }}"><span class="icon">📺</span> 구독</a></li>
+        <li><a href="#"><span class="icon">📚</span> 보관함</a></li>
+        <li><a href="#"><span class="icon">🕐</span> 시청 기록</a></li>
+        <li class="sidebar-divider"></li>
+        {% set _cat = request.args.get('category') or 'all' %}
+        <li><a href="{{ url_for('main.index', category='all') }}" class="sidebar-category {% if _cat == 'all' %}active{% endif %}">전체</a></li>
+        <li><a href="{{ url_for('main.index', category='entertainment') }}" class="sidebar-category {% if _cat == 'entertainment' %}active{% endif %}">엔터테인먼트</a></li>
+        <li><a href="{{ url_for('main.index', category='music') }}" class="sidebar-category {% if _cat == 'music' %}active{% endif %}">음악</a></li>
+        <li><a href="{{ url_for('main.index', category='sports') }}" class="sidebar-category {% if _cat == 'sports' %}active{% endif %}">스포츠</a></li>
+        <li><a href="{{ url_for('main.index', category='game') }}" class="sidebar-category {% if _cat == 'game' %}active{% endif %}">게임</a></li>
+        <li><a href="{{ url_for('main.index', category='education') }}" class="sidebar-category {% if _cat == 'education' %}active{% endif %}">교육</a></li>
+        <li><a href="{{ url_for('main.index', category='tech') }}" class="sidebar-category {% if _cat == 'tech' %}active{% endif %}">기술</a></li>
+        <li><a href="{{ url_for('main.index', category='comedy') }}" class="sidebar-category {% if _cat == 'comedy' %}active{% endif %}">코미디</a></li>
+        <li><a href="{{ url_for('main.index', category='travel') }}" class="sidebar-category {% if _cat == 'travel' %}active{% endif %}">여행</a></li>
+        <li><a href="{{ url_for('main.index', category='food') }}" class="sidebar-category {% if _cat == 'food' %}active{% endif %}">음식</a></li>
+        <li><a href="{{ url_for('main.index', category='lifestyle') }}" class="sidebar-category {% if _cat == 'lifestyle' %}active{% endif %}">라이프스타일</a></li>
+        <li><a href="{{ url_for('main.index', category='news') }}" class="sidebar-category {% if _cat == 'news' %}active{% endif %}">뉴스</a></li>
+        <li><a href="{{ url_for('main.index', category='etc') }}" class="sidebar-category {% if _cat == 'etc' %}active{% endif %}">기타</a></li>
+        <li class="sidebar-divider"></li>
+        <li><a href="{{ url_for('studio.index') }}"><span class="icon">🎬</span> Studio</a></li>
+        <li><a href="{{ url_for('main.user_profile', username=current_user.username if current_user.is_authenticated else 'default') }}"><span class="icon">▶</span> 내 동영상</a></li>
+        <li><a href="#"><span class="icon">⏱</span> 나중에 볼 동영상</a></li>
+        <li><a href="{{ url_for('auth.profile') }}"><span class="icon">👤</span> 마이페이지</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="main-wrap main-wrap--with-sidebar">
+    <div class="main-content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-wrap" role="region" aria-label="알림">
+            {% for category, msg in messages %}
+              <div class="auth-msg auth-msg--{{ category or 'success' }} is-visible" role="alert">{{ msg }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <!-- 라이트/다크 모드 토글 (오른쪽 하단) -->
+  <button type="button" class="theme-toggle" id="theme-toggle" aria-label="테마 전환" title="라이트/다크 모드">
+    <span class="theme-icon theme-icon--sun" title="라이트 모드">☀️</span>
+    <span class="theme-icon theme-icon--moon" title="다크 모드">🌙</span>
+  </button>
+
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

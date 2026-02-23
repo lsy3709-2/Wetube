@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}관리자 대시보드 - WeTube{% endblock %}
+
+{% block content %}
+  <div class="admin-page">
+    <div class="admin-header">
+      <h1 class="admin-title">관리자 대시보드</h1>
+      <div class="admin-header-actions">
+        <a href="{{ url_for('auth.logout') }}" class="btn btn--outline">로그아웃</a>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <!-- 통계 카드 (DB 실데이터) -->
+      <div class="admin-stats">
+        <div class="admin-stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.user_count|default(0) }}</div>
+            <div class="stat-label">전체 사용자</div>
+          </div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="stat-icon">📹</div>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.video_count|default(0) }}</div>
+            <div class="stat-label">전체 동영상</div>
+          </div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="stat-icon">📺</div>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.channel_count|default(0) }}</div>
+            <div class="stat-label">전체 채널</div>
+          </div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="stat-icon">💬</div>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.comment_count|default(0) }}</div>
+            <div class="stat-label">전체 댓글</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 관리 메뉴 -->
+      <div class="admin-menu-grid">
+        <a href="{{ url_for('admin.users') }}" class="admin-menu-card">
+          <div class="menu-icon">👥</div>
+          <h3 class="menu-title">사용자 관리</h3>
+          <p class="menu-description">사용자 계정 조회, 수정, 삭제</p>
+        </a>
+
+        <a href="{{ url_for('admin.videos') }}" class="admin-menu-card">
+          <div class="menu-icon">📹</div>
+          <h3 class="menu-title">동영상 관리</h3>
+          <p class="menu-description">동영상 조회, 수정, 삭제, 신고 처리</p>
+        </a>
+
+        <a href="{{ url_for('admin.comments') }}" class="admin-menu-card">
+          <div class="menu-icon">💬</div>
+          <h3 class="menu-title">댓글 관리</h3>
+          <p class="menu-description">댓글 조회, 삭제, 신고 처리</p>
+        </a>
+
+        <a href="{{ url_for('admin.database') }}" class="admin-menu-card">
+          <div class="menu-icon">🗄️</div>
+          <h3 class="menu-title">데이터베이스 관리</h3>
+          <p class="menu-description">DB 조회, 백업, 유지보수</p>
+        </a>
+
+        <a href="{{ url_for('admin.api_preview') }}" class="admin-menu-card">
+          <div class="menu-icon">🔌</div>
+          <h3 class="menu-title">API 미리보기</h3>
+          <p class="menu-description">REST API 실시간 데이터 조회</p>
+        </a>
+      </div>
+
+      <!-- 최근 활동 -->
+      <div class="admin-recent-activity">
+        <h2 class="section-title">최근 활동</h2>
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="activity-icon">➕</div>
+            <div class="activity-content">
+              <p class="activity-text"><strong>새 사용자</strong>가 가입했습니다.</p>
+              <p class="activity-time">5분 전</p>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">📹</div>
+            <div class="activity-content">
+              <p class="activity-text"><strong>새 동영상</strong>이 업로드되었습니다.</p>
+              <p class="activity-time">15분 전</p>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">🚨</div>
+            <div class="activity-content">
+              <p class="activity-text"><strong>신고</strong>가 접수되었습니다.</p>
+              <p class="activity-time">1시간 전</p>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon">🗑️</div>
+            <div class="activity-content">
+              <p class="activity-text"><strong>동영상</strong>이 삭제되었습니다.</p>
+              <p class="activity-time">2시간 전</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/admin-page.js') }}"></script>
+{% endblock %}

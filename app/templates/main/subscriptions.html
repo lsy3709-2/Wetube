@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}구독 - WeTube{% endblock %}
+
+{% block content %}
+  <div class="subscriptions-page">
+    <div class="subscriptions-header">
+      <h1 class="subscriptions-title">구독 피드</h1>
+      <p class="subscriptions-desc">구독한 채널의 최신 영상을 모아봅니다.</p>
+    </div>
+
+    <div class="subscriptions-content">
+      {% if videos and videos.total > 0 %}
+      <div class="video-grid-subscriptions">
+        {% for video in videos.items %}
+        <article class="video-card">
+          <a href="{{ url_for('main.watch', video_id=video.id) }}" class="video-card-link">
+            <div class="video-card-thumb">
+              {% if video.get_thumbnail_url() %}
+              <img src="{{ video.get_thumbnail_url() }}" alt="" class="video-card-thumb-img">
+              {% else %}
+              <span>📹</span>
+              {% endif %}
+            </div>
+            <h3 class="video-card-title">{{ video.title }}</h3>
+          </a>
+          <a href="{{ url_for('main.user_profile', username=video.user.username if video.user else 'default') }}" class="video-card-channel">{{ video.user.username if video.user else 'default' }}</a>
+          <p class="video-card-meta">조회수 {{ video.views }}회 · 좋아요 {{ video.likes|default(0) }}</p>
+          <p class="video-card-time">{{ video.created_at.strftime('%Y-%m-%d') if video.created_at else '' }}</p>
+        </article>
+        {% endfor %}
+      </div>
+
+      <!-- 페이지네이션 -->
+      {% if videos.pages > 1 %}
+      <nav class="pagination" aria-label="구독 피드 페이지">
+        <div class="pagination-inner">
+          {% if videos.has_prev %}
+          <a href="{{ url_for('main.subscriptions', page=videos.prev_num) }}" class="pagination-link">이전</a>
+          {% endif %}
+          <span class="pagination-info">{{ videos.page }} / {{ videos.pages }}</span>
+          {% if videos.has_next %}
+          <a href="{{ url_for('main.subscriptions', page=videos.next_num) }}" class="pagination-link">다음</a>
+          {% endif %}
+        </div>
+      </nav>
+      {% endif %}
+      {% else %}
+      <div class="subscriptions-empty" id="subscriptions-empty">
+        <div class="empty-icon">📺</div>
+        <h2 class="empty-title">구독한 채널이 없습니다</h2>
+        <p class="empty-text">관심 있는 채널을 구독하면 최신 영상을 쉽게 확인할 수 있습니다.</p>
+        <a href="{{ url_for('main.index') }}" class="btn btn--primary">동영상 둘러보기</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/subscriptions-page.js') }}"></script>
+{% endblock %}

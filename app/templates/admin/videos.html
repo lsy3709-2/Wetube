@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}동영상 관리 - 관리자 - WeTube{% endblock %}
+
+{% block content %}
+  <div class="admin-page admin-videos-page">
+    <div class="admin-header">
+      <div class="admin-header-left">
+        <a href="{{ url_for('admin.index') }}" class="admin-back-link">← 관리자 대시보드</a>
+        <h1 class="admin-title">동영상 관리</h1>
+      </div>
+      <div class="admin-header-actions">
+        <a href="{{ url_for('auth.logout') }}" class="btn btn--outline">로그아웃</a>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <!-- 검색 / 필터 -->
+      <div class="admin-toolbar">
+        <form method="get" action="{{ url_for('admin.videos') }}" class="admin-search">
+          <input type="search" name="q" id="video-search" class="admin-search-input" placeholder="제목, 업로더 검색" value="{{ request.args.get('q', '') }}">
+          <button type="submit" class="btn btn--primary" id="btn-search">검색</button>
+        </form>
+        <div class="admin-filters">
+          <select id="video-visibility-filter" class="admin-select">
+            <option value="all">전체 공개설정</option>
+            <option value="public">공개</option>
+            <option value="unlisted">일부 공개</option>
+            <option value="private">비공개</option>
+          </select>
+          <select id="video-status-filter" class="admin-select">
+            <option value="all">전체 상태</option>
+            <option value="normal">정상</option>
+            <option value="reported">신고됨</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 동영상 목록 테이블 (DB 실데이터) -->
+      <div class="admin-table-wrap">
+        <table class="admin-table admin-table--videos">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th class="col-thumb">썸네일</th>
+              <th class="col-title">제목</th>
+              <th class="col-uploader">업로더</th>
+              <th class="col-views">조회수</th>
+              <th class="col-date">업로드일</th>
+              <th class="col-visibility">공개설정</th>
+              <th class="col-status">상태</th>
+              <th class="col-actions">관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for video in videos.items %}
+            <tr>
+              <td class="col-num">{{ (videos.page - 1) * videos.per_page + loop.index }}</td>
+              <td class="col-thumb">
+                {% if video.get_thumbnail_url() %}
+                <a href="{{ url_for('main.watch', video_id=video.id) }}" class="video-thumb-link">
+                  <img src="{{ video.get_thumbnail_url() }}" alt="" class="video-thumb-small-img">
+                </a>
+                {% else %}
+                <div class="video-thumb-small">📹</div>
+                {% endif %}
+              </td>
+              <td class="col-title">
+                <a href="{{ url_for('main.watch', video_id=video.id) }}" class="video-title-link">{{ video.title }}</a>
+              </td>
+              <td class="col-uploader">{{ video.user.username if video.user else '-' }}</td>
+              <td class="col-views">{{ video.views }}회</td>
+              <td class="col-date">{{ video.created_at.strftime('%Y-%m-%d') if video.created_at else '-' }}</td>
+              <td class="col-visibility">
+                <span class="status-badge status-public">공개</span>
+              </td>
+              <td class="col-status">
+                <span class="status-badge status-active">정상</span>
+              </td>
+              <td class="col-actions">
+                <a href="{{ url_for('studio.edit', video_id=video.id) }}" class="btn-icon" title="수정">✏️</a>
+                <form method="post" action="{{ url_for('studio.delete', video_id=video.id) }}" style="display: inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                  <button type="submit" class="btn-icon btn-icon--danger" title="삭제">🗑️</button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="9" class="admin-empty">등록된 동영상이 없습니다.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 페이지네이션 -->
+      {% if videos.pages > 1 %}
+      <div class="admin-pagination">
+        {% if videos.has_prev %}
+        <a href="{{ url_for('admin.videos', page=videos.prev_num, q=request.args.get('q', '')) }}" class="btn btn--outline btn--small">이전</a>
+        {% else %}
+        <span class="btn btn--outline btn--small" disabled>이전</span>
+        {% endif %}
+        <span class="pagination-info">{{ videos.page }} / {{ videos.pages }} 페이지</span>
+        {% if videos.has_next %}
+        <a href="{{ url_for('admin.videos', page=videos.next_num, q=request.args.get('q', '')) }}" class="btn btn--outline btn--small">다음</a>
+        {% else %}
+        <span class="btn btn--outline btn--small" disabled>다음</span>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/admin-videos-page.js') }}"></script>
+{% endblock %}

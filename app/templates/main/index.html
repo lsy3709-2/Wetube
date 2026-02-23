@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}WeTube – 홈{% endblock %}
+
+{% block content %}
+  <section class="home-content">
+    <h2 class="section-title">최신 동영상</h2>
+
+    <!-- 카테고리·정렬·태그 필터 (선택 값 유지, active 표시) -->
+    {% set _category = request.args.get('category') or 'all' %}
+    {% set _sort = request.args.get('sort') or 'latest' %}
+    {% set _tag = request.args.get('tag') or '' %}
+    <div class="home-filter-bar">
+      <div class="home-filter-tabs">
+        <span class="filter-label">카테고리</span>
+        <a href="{{ url_for('main.index', category='all', sort=_sort, tag=_tag) }}" class="filter-tab-home {% if _category == 'all' %}active{% endif %}">전체</a>
+        <a href="{{ url_for('main.index', category='entertainment', sort=_sort, tag=_tag) }}" class="filter-tab-home {% if _category == 'entertainment' %}active{% endif %}">엔터테인먼트</a>
+        <a href="{{ url_for('main.index', category='music', sort=_sort, tag=_tag) }}" class="filter-tab-home {% if _category == 'music' %}active{% endif %}">음악</a>
+        <a href="{{ url_for('main.index', category='sports', sort=_sort, tag=_tag) }}" class="filter-tab-home {% if _category == 'sports' %}active{% endif %}">스포츠</a>
+        <a href="{{ url_for('main.index', category='game', sort=_sort, tag=_tag) }}" class="filter-tab-home {% if _category == 'game' %}active{% endif %}">게임</a>
+        <a href="{{ url_for('main.index', category='education', sort=_sort, tag=_tag) }}" class="filter-tab-home {% if _category == 'education' %}active{% endif %}">교육</a>
+        <a href="{{ url_for('main.index', category='tech', sort=_sort, tag=_tag) }}" class="filter-tab-home {% if _category == 'tech' %}active{% endif %}">기술</a>
+        <a href="{{ url_for('main.index', category='comedy', sort=_sort, tag=_tag) }}" class="filter-tab-home {% if _category == 'comedy' %}active{% endif %}">코미디</a>
+        <a href="{{ url_for('main.index', category='travel', sort=_sort, tag=_tag) }}" class="filter-tab-home {% if _category == 'travel' %}active{% endif %}">여행</a>
+        <a href="{{ url_for('main.index', category='food', sort=_sort, tag=_tag) }}" class="filter-tab-home {% if _category == 'food' %}active{% endif %}">음식</a>
+        <a href="{{ url_for('main.index', category='lifestyle', sort=_sort, tag=_tag) }}" class="filter-tab-home {% if _category == 'lifestyle' %}active{% endif %}">라이프스타일</a>
+        <a href="{{ url_for('main.index', category='news', sort=_sort, tag=_tag) }}" class="filter-tab-home {% if _category == 'news' %}active{% endif %}">뉴스</a>
+        <a href="{{ url_for('main.index', category='etc', sort=_sort, tag=_tag) }}" class="filter-tab-home {% if _category == 'etc' %}active{% endif %}">기타</a>
+      </div>
+
+      <div class="home-sort-bar">
+        <span class="sort-label">정렬</span>
+        <a href="{{ url_for('main.index', category=_category, sort='latest', tag=_tag) }}" class="sort-option-home {% if _sort == 'latest' %}active{% endif %}">최신순</a>
+        <a href="{{ url_for('main.index', category=_category, sort='popular', tag=_tag) }}" class="sort-option-home {% if _sort == 'popular' %}active{% endif %}">인기순</a>
+        <a href="{{ url_for('main.index', category=_category, sort='views', tag=_tag) }}" class="sort-option-home {% if _sort == 'views' %}active{% endif %}">조회수순</a>
+      </div>
+
+      <div class="popular-tags-inline">
+        <span class="tags-label">인기 태그</span>
+        <a href="{{ url_for('main.index', category=_category, sort=_sort) }}" class="tag-pill tag-pill--small {% if not current_tag %}active{% endif %}">전체</a>
+        {% for t in popular_tags or [] %}
+        <a href="{{ url_for('main.index', category=_category, sort=_sort, tag=t.name) }}" class="tag-pill tag-pill--small {% if current_tag == t.name %}active{% endif %}">#{{ t.name }}</a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="video-grid" id="video-grid" data-api-base="/api/videos" data-category="{{ _category }}" data-sort="{{ _sort }}" data-tag="{{ _tag }}">
+      {% for video in videos.items %}
+      <article class="video-card">
+        <a href="{{ url_for('main.watch', video_id=video.id) }}" class="video-card-link">
+          <div class="video-card-thumb">
+            {% if video.get_thumbnail_url() %}
+            <img src="{{ video.get_thumbnail_url() }}" alt="" class="video-card-thumb-img">
+            {% else %}
+            <span>📹</span>
+            {% endif %}
+          </div>
+          <h3 class="video-card-title">{{ video.title }}</h3>
+        </a>
+        <a href="{{ url_for('main.user_profile', username=video.user.username if video.user else 'default') }}" class="video-card-channel">{{ video.user.username if video.user else 'default' }}</a>
+        <p class="video-card-meta">조회수 {{ video.views }}회 · 좋아요 {{ video.likes|default(0) }}</p>
+        {% if video.tags %}
+        <div class="video-card-tags">
+          {% for t in video.tags[:3] %}
+          <a href="{{ url_for('main.tag', tag_name=t.name) }}" class="video-card-tag">#{{ t.name }}</a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </article>
+      {% else %}
+      <p class="home-empty">등록된 동영상이 없습니다. <a href="{{ url_for('studio.upload') }}">Studio</a>에서 업로드하세요.</p>
+      {% endfor %}
+    </div>
+    {% if videos and videos.has_next %}
+    <div class="load-more-wrap" style="text-align: center; margin: 1.5rem 0;">
+      <button type="button" class="btn btn--outline" id="btn-load-more" data-next-page="{{ videos.next_num }}">더 보기</button>
+    </div>
+    {% endif %}
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/index-page.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}접근 제한 - WeTube{% endblock %}
+
+{% block content %}
+  <div class="main-content-inner" style="max-width: 480px; margin: 2rem auto; text-align: center;">
+    <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">접근할 수 없습니다</h1>
+    <p class="auth-msg">본인 동영상만 수정·삭제할 수 있습니다. (로그인 미구현: 기본 계정 소유 동영상만 가능)</p>
+    <p style="margin-top: 1.5rem;">
+      <a href="{{ url_for('studio.index') }}" class="btn btn--primary">Studio로 돌아가기</a>
+      <a href="{{ url_for('main.index') }}" class="btn btn--outline">홈으로</a>
+    </p>
+  </div>
+{% endblock %}

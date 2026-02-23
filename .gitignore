@@ -1,0 +1,17 @@
+# 환경 변수 (비밀키 포함 - 반드시 제외)
+.env
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Flask
+instance/*.db
+
+# 업로드 파일
+uploads/

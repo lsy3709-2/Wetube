@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}회원가입 - WeTube{% endblock %}
+
+{% block content %}
+  <div class="auth-page">
+    <div class="auth-card">
+      <h1>회원가입</h1>
+      <p id="register-msg" class="auth-msg" role="status" aria-live="polite" style="display:none;"></p>
+      <form id="register-form" class="auth-form" method="post" action="{{ url_for('auth.register') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label for="register-username">사용자명 <span class="required">*</span></label>
+          <input type="text" id="register-username" name="username" placeholder="사용자명" autocomplete="username" value="{{ username or '' }}" required>
+        </div>
+        <div class="form-group">
+          <label for="register-email">이메일 <span class="required">*</span></label>
+          <input type="email" id="register-email" name="email" placeholder="이메일" autocomplete="email" value="{{ email or '' }}" required>
+        </div>
+        <div class="form-group">
+          <label for="register-nickname">닉네임</label>
+          <input type="text" id="register-nickname" name="nickname" placeholder="닉네임" autocomplete="nickname" value="{{ nickname or '' }}">
+        </div>
+        <div class="form-group">
+          <label for="register-password">비밀번호 <span class="required">*</span></label>
+          <input type="password" id="register-password" name="password" placeholder="비밀번호" autocomplete="new-password" required>
+        </div>
+        <div class="form-group">
+          <label for="register-password-confirm">비밀번호 확인 <span class="required">*</span></label>
+          <input type="password" id="register-password-confirm" name="password_confirm" placeholder="비밀번호 확인" autocomplete="new-password" required>
+        </div>
+        <button type="submit" class="btn btn--primary btn--block">회원가입</button>
+      </form>
+      <p class="auth-switch">이미 계정이 있으신가요? <a href="{{ url_for('auth.login') }}">로그인</a></p>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/auth-register-page.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}DB 검증 리포트 - 관리자 - WeTube{% endblock %}
+
+{% block content %}
+  <div class="admin-page">
+    <div class="admin-header">
+      <a href="{{ url_for('admin.index') }}" class="admin-back-link">← 관리자 대시보드</a>
+      <h1 class="admin-title">DB 검증 리포트</h1>
+    </div>
+
+    <div class="admin-content" style="max-width: 600px; padding: 2rem;">
+      <p class="admin-msg-text">테스트 전/후 데이터베이스 비교 리포트가 아직 생성되지 않았습니다.</p>
+      <p>터미널에서 아래 명령을 실행한 뒤 이 페이지를 새로고침하세요.</p>
+      <pre style="background: #16213e; padding: 1rem; border-radius: 8px; overflow-x: auto;">python scripts/db_verify.py</pre>
+      <p class="admin-msg-text" style="margin-top: 1rem;">실행 후 <code>instance/db_verify_report.html</code>이 생성되며, 자동으로 브라우저에서 열립니다.</p>
+      <a href="{{ url_for('admin.db_verify') }}" class="btn btn--primary">새로고침</a>
+    </div>
+  </div>
+{% endblock %}

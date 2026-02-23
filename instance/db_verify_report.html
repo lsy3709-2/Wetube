@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>DB 검증 - 전/후 비교</title>
+  <style>
+    body { font-family: 'Malgun Gothic', sans-serif; margin: 20px; background: #1a1a2e; color: #eee; }
+    h1 { color: #e94560; }
+    h2 { color: #0f3460; margin-top: 2em; }
+    h3, h4 { color: #aaa; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .table-wrap { overflow-x: auto; margin-bottom: 20px; }
+    table { border-collapse: collapse; width: 100%; font-size: 12px; background: #16213e; }
+    th, td { border: 1px solid #0f3460; padding: 6px 8px; text-align: left; }
+    th { background: #0f3460; color: #e94560; }
+    tr:nth-child(even) { background: #1a1a2e; }
+    .highlight { background: #e94560 !important; color: #fff; }
+    caption { font-weight: bold; margin-bottom: 8px; color: #e94560; }
+    pre { background: #16213e; padding: 12px; overflow-x: auto; font-size: 11px; }
+    .meta { color: #888; font-size: 14px; margin-bottom: 20px; }
+    ul { line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <h1>DB 검증 리포트 - 전/후 비교</h1>
+  <p class="meta">시나리오: 조회수 증가 (GET /api/videos/<id>) | 생성 시각: 2026-02-15 22:15:00</p>
+  <p class="meta">DB 파일: C:\Wetube\ch05\instance\test_verify.db</p>
+
+  <h3>변경 내역</h3><ul><li><strong>videos.id=1</strong> views: 10 → 11</li><li><strong>videos.id=1</strong> updated_at: 2026-02-15 13:15:00.042923 → 2026-02-15 13:15:00.065175</li></ul>
+  <h3>API 응답 (일부)</h3><pre>{
+  "item": {
+    "category": "",
+    "channel": {
+      "id": 1,
+      "username": "default"
+    },
+    "created_at": "2026-02-15T13:15:00.042920",
+    "description": "설명",
+    "duration": null,
+    "id": 1,
+    "likes": 0,
+    "tags": [],
+    "thumbnail_url": null,
+    "title": "검증용_조회수테스트",
+    "video_url": "/media/videos/verify.mp4",
+    "views": 11
+  },
+  "related_videos": [],
+  "success": true
+}...</pre>
+
+  <h2>테이블별 데이터 비교</h2>
+  <div class="grid">
+    <div>
+      <h3>테스트 전 (Before)</h3>
+      <div class="table-wrap"><h4>users (전)</h4><table><caption>users</caption><thead><tr><th>id</th><th>username</th><th>email</th><th>password_hash</th><th>nickname</th><th>profile_image</th><th>profile_image_public_id</th><th>is_admin</th><th>created_at</th><th>updated_at</th></tr></thead><tbody><tr><td>1</td><td>default</td><td>default@example.com</td><td></td><td><em>NULL</em></td><td><em>NULL</em></td><td><em>NULL</em></td><td>0</td><td>2026-02-15 13:15:00.022193</td><td>2026-02-15 13:15:00.022196</td></tr></tbody></table></div><div class="table-wrap"><h4>videos (전)</h4><table><caption>videos</caption><thead><tr><th>id</th><th>title</th><th>description</th><th>category</th><th>duration</th><th>video_path</th><th>thumbnail_path</th><th>video_public_id</th><th>thumbnail_public_id</th><th>views</th><th>likes</th><th>user_id</th><th>created_at</th><th>updated_at</th></tr></thead><tbody><tr><td>1</td><td>검증용_조회수테스트</td><td>설명</td><td><em>NULL</em></td><td><em>NULL</em></td><td>verify.mp4</td><td><em>NULL</em></td><td><em>NULL</em></td><td><em>NULL</em></td><td>10</td><td>0</td><td>1</td><td>2026-02-15 13:15:00.042920</td><td>2026-02-15 13:15:00.042923</td></tr></tbody></table></div><div class="table-wrap"><h4>tags (전)</h4><p>데이터 없음</p></div><div class="table-wrap"><h4>video_tags (전)</h4><p>데이터 없음</p></div><div class="table-wrap"><h4>subscriptions (전)</h4><p>데이터 없음</p></div>
+    </div>
+    <div>
+      <h3>테스트 후 (After)</h3>
+      <div class="table-wrap"><h4>users (후)</h4><table><caption>users</caption><thead><tr><th>id</th><th>username</th><th>email</th><th>password_hash</th><th>nickname</th><th>profile_image</th><th>profile_image_public_id</th><th>is_admin</th><th>created_at</th><th>updated_at</th></tr></thead><tbody><tr><td>1</td><td>default</td><td>default@example.com</td><td></td><td><em>NULL</em></td><td><em>NULL</em></td><td><em>NULL</em></td><td>0</td><td>2026-02-15 13:15:00.022193</td><td>2026-02-15 13:15:00.022196</td></tr></tbody></table></div><div class="table-wrap"><h4>videos (후)</h4><table><caption>videos</caption><thead><tr><th>id</th><th>title</th><th>description</th><th>category</th><th>duration</th><th>video_path</th><th>thumbnail_path</th><th>video_public_id</th><th>thumbnail_public_id</th><th>views</th><th>likes</th><th>user_id</th><th>created_at</th><th>updated_at</th></tr></thead><tbody><tr><td>1</td><td>검증용_조회수테스트</td><td>설명</td><td><em>NULL</em></td><td><em>NULL</em></td><td>verify.mp4</td><td><em>NULL</em></td><td><em>NULL</em></td><td><em>NULL</em></td><td>11</td><td>0</td><td>1</td><td>2026-02-15 13:15:00.042920</td><td>2026-02-15 13:15:00.065175</td></tr></tbody></table></div><div class="table-wrap"><h4>tags (후)</h4><p>데이터 없음</p></div><div class="table-wrap"><h4>video_tags (후)</h4><p>데이터 없음</p></div><div class="table-wrap"><h4>subscriptions (후)</h4><p>데이터 없음</p></div>
+    </div>
+  </div>
+</body>
+</html>

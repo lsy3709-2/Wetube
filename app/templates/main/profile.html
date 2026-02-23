@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.nickname or user.username }} - WeTube{% endblock %}
+
+{% block content %}
+  <div class="user-profile-page">
+    <!-- 채널 헤더 -->
+    <div class="user-profile-header">
+      <div class="user-profile-avatar">
+        {% if user.get_profile_image_url() %}
+        <img src="{{ user.get_profile_image_url() }}" alt="{{ user.nickname or user.username }}">
+        {% else %}
+        <span>{{ (user.nickname or user.username)[0]|upper }}</span>
+        {% endif %}
+      </div>
+      <div class="user-profile-info">
+        <h1 class="user-profile-name">{{ user.nickname or user.username }}</h1>
+        <p class="user-profile-handle">@{{ user.username }}</p>
+        <p class="user-profile-subs">
+          구독자 {{ stats.subscriber_count }}명 · 동영상 {{ stats.video_count }}개 ·
+          총 조회수 {{ stats.total_views }}회 · 총 좋아요 {{ stats.total_likes }}
+        </p>
+        <p class="user-profile-desc">채널 설명</p>
+        <button type="button" class="btn {% if is_subscribed %}btn--outline subscribed{% else %}btn--primary{% endif %}" id="btn-subscribe" data-channel-username="{{ user.username }}">{{ '구독중' if is_subscribed else '구독' }}</button>
+      </div>
+    </div>
+
+    <!-- 탭 -->
+    <div class="user-profile-tabs">
+      <button type="button" class="profile-tab active" data-tab="videos">동영상</button>
+      <button type="button" class="profile-tab" data-tab="playlists">재생목록</button>
+      <button type="button" class="profile-tab" data-tab="about">정보</button>
+    </div>
+
+    <!-- 동영상 목록 (DB 연동, 페이지네이션) -->
+    <div class="user-profile-content" id="tab-videos">
+      <div class="user-video-grid">
+        {% for video in videos.items %}
+        <a href="{{ url_for('main.watch', video_id=video.id) }}" class="video-card">
+          <div class="video-card-thumb">
+            {% if video.get_thumbnail_url() %}
+            <img src="{{ video.get_thumbnail_url() }}" alt="" class="video-card-thumb-img">
+            {% else %}
+            <span>📹</span>
+            {% endif %}
+          </div>
+          <h3 class="video-card-title">{{ video.title }}</h3>
+          <p class="video-card-meta">조회수 {{ video.views }}회 · 좋아요 {{ video.likes|default(0) }} · {{ video.created_at.strftime('%Y-%m-%d') if video.created_at else '' }}</p>
+        </a>
+        {% else %}
+        <p class="empty-text">업로드한 동영상이 없습니다.</p>
+        {% endfor %}
+      </div>
+
+      <!-- 페이지네이션 -->
+      {% if videos.pages > 1 %}
+      <nav class="pagination" aria-label="프로필 동영상 페이지">
+        <div class="pagination-inner">
+          {% if videos.has_prev %}
+          <a href="{{ url_for('main.user_profile', username=user.username, page=videos.prev_num) }}" class="pagination-link">이전</a>
+          {% endif %}
+          <span class="pagination-info">{{ videos.page }} / {{ videos.pages }}</span>
+          {% if videos.has_next %}
+          <a href="{{ url_for('main.user_profile', username=user.username, page=videos.next_num) }}" class="pagination-link">다음</a>
+          {% endif %}
+        </div>
+      </nav>
+      {% endif %}
+    </div>
+
+    <!-- 재생목록 (숨김) -->
+    <div class="user-profile-content" id="tab-playlists" style="display: none;">
+      <div class="empty-state">
+        <p class="empty-text">재생목록이 없습니다.</p>
+      </div>
+    </div>
+
+    <!-- 정보 (숨김) -->
+    <div class="user-profile-content" id="tab-about" style="display: none;">
+      <div class="user-about">
+        <h3>채널 설명</h3>
+        <p>채널 설명</p>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/user-profile-page.js') }}"></script>
+{% endblock %}

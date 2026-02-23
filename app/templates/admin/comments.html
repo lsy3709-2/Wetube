@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}댓글 관리 - 관리자 - WeTube{% endblock %}
+
+{% block content %}
+  <div class="admin-page admin-comments-page">
+    <div class="admin-header">
+      <div class="admin-header-left">
+        <a href="{{ url_for('admin.index') }}" class="admin-back-link">← 관리자 대시보드</a>
+        <h1 class="admin-title">댓글 관리</h1>
+      </div>
+      <div class="admin-header-actions">
+        <a href="{{ url_for('auth.logout') }}" class="btn btn--outline">로그아웃</a>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <!-- 검색 -->
+      <div class="admin-toolbar">
+        <form method="get" action="{{ url_for('admin.comments') }}" class="admin-search-form">
+          <input type="search" name="q" id="comment-search" class="admin-search-input" placeholder="댓글 내용, 작성자 검색" value="{{ request.args.get('q', '') }}">
+          <button type="submit" class="btn btn--primary" id="btn-search">검색</button>
+        </form>
+      </div>
+
+      <!-- 댓글 목록 테이블 (DB 연동) -->
+      <div class="admin-table-wrap">
+        <table class="admin-table admin-table--comments">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th class="col-video">동영상</th>
+              <th class="col-author">작성자</th>
+              <th class="col-content">댓글 내용</th>
+              <th class="col-date">작성일</th>
+              <th class="col-parent">답글</th>
+              <th class="col-actions">관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in comments.items or [] %}
+            <tr>
+              <td class="col-num">{{ c.id }}</td>
+              <td class="col-video">
+                <a href="{{ url_for('main.watch', video_id=c.video_id) }}" class="video-link">{{ c.video.title if c.video else '(삭제됨)' }}</a>
+              </td>
+              <td class="col-author">{{ c.user.username if c.user else '(알 수 없음)' }}</td>
+              <td class="col-content">
+                <span class="comment-text-preview">{{ c.content[:80] }}{% if c.content|length > 80 %}...{% endif %}</span>
+              </td>
+              <td class="col-date">{{ c.created_at.strftime('%Y.%m.%d %H:%M') if c.created_at else '' }}</td>
+              <td class="col-parent">{{ '대댓글' if c.parent_id else '-' }}</td>
+              <td class="col-actions">
+                <form method="post" action="{{ url_for('admin.comment_delete', comment_id=c.id) }}" class="admin-delete-form" style="display: inline;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="page" value="{{ comments.page }}">
+                  <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
+                  <button type="submit" class="btn-icon btn-icon--danger" title="삭제" onclick="return confirm('이 댓글을 삭제할까요?');">🗑️</button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="7" class="admin-empty">댓글이 없습니다.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 페이지네이션 -->
+      {% if comments.pages > 1 %}
+      <div class="admin-pagination">
+        {% if comments.has_prev %}
+        <a href="{{ url_for('admin.comments', page=comments.prev_num, q=request.args.get('q', '')) }}" class="btn btn--outline btn--small">이전</a>
+        {% else %}
+        <button type="button" class="btn btn--outline btn--small" disabled>이전</button>
+        {% endif %}
+        <span class="pagination-info">{{ comments.page }} / {{ comments.pages }} 페이지</span>
+        {% if comments.has_next %}
+        <a href="{{ url_for('admin.comments', page=comments.next_num, q=request.args.get('q', '')) }}" class="btn btn--outline btn--small">다음</a>
+        {% else %}
+        <button type="button" class="btn btn--outline btn--small" disabled>다음</button>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/admin-comments-page.js') }}"></script>
+{% endblock %}

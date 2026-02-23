@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}API 미리보기 - 관리자 - WeTube{% endblock %}
+
+{% block content %}
+  <div class="admin-page">
+    <div class="admin-header">
+      <a href="{{ url_for('admin.index') }}" class="admin-back-link">← 관리자 대시보드</a>
+      <h1 class="admin-title">API 미리보기</h1>
+      <p class="admin-msg-text">REST API(/api/videos, /api/tags/popular)에서 실시간 데이터를 불러옵니다.</p>
+    </div>
+
+    <div class="admin-content">
+      <div class="api-preview-section">
+        <h2 class="section-title">GET /api/videos</h2>
+        <button type="button" class="btn btn--primary" id="btn-load-videos">비디오 목록 불러오기</button>
+        <div id="api-videos-result" class="api-result"></div>
+      </div>
+
+      <div class="api-preview-section">
+        <h2 class="section-title">GET /api/tags/popular</h2>
+        <button type="button" class="btn btn--primary" id="btn-load-tags">인기 태그 불러오기</button>
+        <div id="api-tags-result" class="api-result"></div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/admin-api-preview-page.js') }}"></script>
+{% endblock %}

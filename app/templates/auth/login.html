@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}로그인 - WeTube{% endblock %}
+
+{% block content %}
+  <div class="auth-page">
+    <div class="auth-card">
+      <h1>로그인</h1>
+      <p id="login-error" class="login-error auth-msg auth-msg--error" role="alert"></p>
+      <form id="login-form" class="auth-form" method="post" action="{{ url_for('auth.login', next=request.args.get('next')) }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+          <label for="login-id">{{ form.login_id.label.text }}</label>
+          {{ form.login_id(class="form-input", id="login-id", placeholder="사용자명 또는 이메일", autocomplete="username") }}
+          {% if form.login_id.errors %}
+            <span class="form-error">{{ form.login_id.errors[0] }}</span>
+          {% endif %}
+        </div>
+        <div class="form-group">
+          <label for="login-password">{{ form.password.label.text }}</label>
+          {{ form.password(class="form-input", id="login-password", placeholder="비밀번호", autocomplete="current-password") }}
+          {% if form.password.errors %}
+            <span class="form-error">{{ form.password.errors[0] }}</span>
+          {% endif %}
+        </div>
+        <div class="form-group form-group--checkbox">
+          <label class="checkbox-label">
+            {{ form.remember() }}
+            <span>{{ form.remember.label.text }}</span>
+          </label>
+        </div>
+        <button type="submit" class="btn btn--primary btn--block">로그인</button>
+      </form>
+      <p class="auth-switch">계정이 없으신가요? <a href="{{ url_for('auth.register') }}">회원가입</a></p>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/auth-login-page.js') }}"></script>
+{% endblock %}

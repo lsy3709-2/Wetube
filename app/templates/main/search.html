@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}검색: {{ q or '' }} - WeTube{% endblock %}
+
+{% block content %}
+  <div class="search-page">
+    <!-- 검색 폼 (입력값 유지) -->
+    <form class="search-form" method="get" action="{{ url_for('main.search') }}">
+      <input type="search" name="q" class="search-input" placeholder="검색어 입력" value="{{ q or '' }}" aria-label="검색어">
+      <input type="hidden" name="category" value="{{ category or '' }}">
+      <input type="hidden" name="sort" value="{{ sort or 'latest' }}">
+      <button type="submit" class="btn btn--primary">검색</button>
+    </form>
+
+    <!-- 검색어 있을 때만 필터·결과 표시 -->
+    {% if q %}
+    <div class="search-filters">
+      <form method="get" action="{{ url_for('main.search') }}" id="search-filter-form">
+        <input type="hidden" name="q" value="{{ q }}">
+        <div class="filter-row">
+          <label class="filter-label">카테고리</label>
+          <select name="category" class="filter-select" onchange="this.form.submit()">
+            <option value="" {% if not category %}selected{% endif %}>전체</option>
+            <option value="entertainment" {% if category == 'entertainment' %}selected{% endif %}>엔터테인먼트</option>
+            <option value="music" {% if category == 'music' %}selected{% endif %}>음악</option>
+            <option value="sports" {% if category == 'sports' %}selected{% endif %}>스포츠</option>
+            <option value="game" {% if category == 'game' %}selected{% endif %}>게임</option>
+            <option value="education" {% if category == 'education' %}selected{% endif %}>교육</option>
+            <option value="tech" {% if category == 'tech' %}selected{% endif %}>기술</option>
+            <option value="comedy" {% if category == 'comedy' %}selected{% endif %}>코미디</option>
+            <option value="travel" {% if category == 'travel' %}selected{% endif %}>여행</option>
+            <option value="food" {% if category == 'food' %}selected{% endif %}>음식</option>
+            <option value="lifestyle" {% if category == 'lifestyle' %}selected{% endif %}>라이프스타일</option>
+            <option value="news" {% if category == 'news' %}selected{% endif %}>뉴스</option>
+            <option value="etc" {% if category == 'etc' %}selected{% endif %}>기타</option>
+          </select>
+          <label class="filter-label">정렬</label>
+          <select name="sort" class="filter-select" onchange="this.form.submit()">
+            <option value="latest" {% if sort == 'latest' %}selected{% endif %}>최신순</option>
+            <option value="popular" {% if sort == 'popular' %}selected{% endif %}>인기순</option>
+            <option value="views" {% if sort == 'views' %}selected{% endif %}>조회수순</option>
+          </select>
+        </div>
+      </form>
+    </div>
+
+    <!-- 검색 결과 -->
+    <div class="search-results">
+      {% if videos %}
+      <div class="search-results-header">
+        <p class="search-results-count">
+          <strong>{{ videos.total }}</strong>개의 결과
+        </p>
+        <p class="search-query">검색어: <strong>{{ q }}</strong></p>
+      </div>
+
+      <div class="search-results-list">
+        {% for video in videos.items %}
+        <div class="search-result-item" data-type="video">
+          <a href="{{ url_for('main.watch', video_id=video.id) }}" class="result-thumb">
+            {% if video.get_thumbnail_url() %}
+            <img src="{{ video.get_thumbnail_url() }}" alt="" class="result-thumb-img">
+            {% else %}
+            <div class="result-thumb-placeholder">📹</div>
+            {% endif %}
+          </a>
+          <div class="result-info">
+            <h3 class="result-title">
+              <a href="{{ url_for('main.watch', video_id=video.id) }}">{{ video.title }}</a>
+            </h3>
+            <div class="result-meta">
+              <span class="result-views">조회수 {{ video.views }}회</span>
+              <span class="result-likes">· 좋아요 {{ video.likes|default(0) }}</span>
+              <span class="result-date">· {{ video.created_at.strftime('%Y-%m-%d') if video.created_at else '' }}</span>
+            </div>
+            <div class="result-channel">
+              <a href="{{ url_for('main.user_profile', username=video.user.username if video.user else 'default') }}" class="channel-link">{{ video.user.username if video.user else 'default' }}</a>
+            </div>
+            <p class="result-description">
+              {{ (video.description or '')[:150] }}{% if video.description and video.description|length > 150 %}...{% endif %}
+            </p>
+          </div>
+        </div>
+        {% else %}
+        <p class="search-no-results">"{{ q }}"에 대한 동영상 결과가 없습니다.</p>
+        {% endfor %}
+      </div>
+
+      <!-- 페이지네이션 -->
+      {% if videos.pages > 1 %}
+      <nav class="pagination" aria-label="검색 결과 페이지">
+        <div class="pagination-inner">
+          {% if videos.has_prev %}
+          <a href="{{ url_for('main.search', q=q, category=category, sort=sort, page=videos.prev_num) }}" class="pagination-link">이전</a>
+          {% endif %}
+          <span class="pagination-info">
+            {{ videos.page }} / {{ videos.pages }}
+          </span>
+          {% if videos.has_next %}
+          <a href="{{ url_for('main.search', q=q, category=category, sort=sort, page=videos.next_num) }}" class="pagination-link">다음</a>
+          {% endif %}
+        </div>
+      </nav>
+      {% endif %}
+      {% else %}
+      <p class="search-no-results">"{{ q }}"에 대한 동영상 결과가 없습니다.</p>
+      {% endif %}
+    </div>
+    {% else %}
+    <!-- 검색어 없을 때 -->
+    <div class="search-empty">
+      <div class="search-empty-icon">🔍</div>
+      <h2 class="search-empty-title">검색어를 입력하세요</h2>
+      <p class="search-empty-text">위의 검색창에 검색어를 입력하여 동영상을 찾아보세요.</p>
+    </div>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/search-page.js') }}"></script>
+{% endblock %}

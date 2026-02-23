@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}마이페이지 - WeTube{% endblock %}
+
+{% block content %}
+  <div class="auth-page mypage-page">
+    <div class="auth-card">
+      <div class="mypage-header">
+        <h1>마이페이지</h1>
+        <p class="mypage-desc">회원 정보를 확인하고 수정할 수 있습니다.</p>
+      </div>
+
+      <p id="profile-msg" class="auth-msg" role="status" aria-live="polite"></p>
+      <form id="profile-form" class="auth-form" method="post" action="{{ url_for('auth.profile') }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <!-- 프로필 사진 (맨 위) -->
+        <div class="form-group profile-image-group mypage-profile-top">
+          <label>프로필 사진</label>
+          <div class="profile-image-wrapper">
+            <div class="profile-image-preview">
+              <img id="profile-image-preview" src="{{ current_user.get_profile_image_url() or '' }}" alt="프로필 미리보기" style="{% if not current_user.profile_image %}display: none;{% endif %}">
+              <div id="profile-image-placeholder" class="profile-image-placeholder" style="{% if current_user.profile_image %}display: none;{% endif %}">
+                <span class="profile-image-icon">👤</span>
+                <span class="profile-image-text">사진 없음</span>
+              </div>
+            </div>
+            <div class="profile-image-actions">
+              <label for="profile-image-input" class="btn btn--outline" style="cursor: pointer; margin-bottom: 8px;">
+                사진 선택
+              </label>
+              <input type="file" id="profile-image-input" name="profile_image" accept="image/*" style="display: none;">
+              <button type="button" id="profile-image-remove" class="btn btn--outline" style="display: none;">사진 제거</button>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="mypage-section-title">회원 정보 수정</h2>
+        <div class="form-group">
+          <label for="profile-nickname">닉네임</label>
+          <input type="text" id="profile-nickname" name="nickname" placeholder="닉네임" autocomplete="nickname" value="{{ nickname or (current_user.nickname or '') }}">
+        </div>
+        <div class="form-group">
+          <label for="profile-email">이메일 <span class="required">*</span></label>
+          <input type="email" id="profile-email" name="email" placeholder="이메일" autocomplete="email" value="{{ email or (current_user.email or '') }}" required>
+        </div>
+        <div class="form-group profile-security-section">
+          <label class="section-label">보안</label>
+          <div class="form-group">
+            <label for="profile-current-password">현재 비밀번호</label>
+            <input type="password" id="profile-current-password" name="current_password" placeholder="현재 비밀번호" autocomplete="current-password">
+            <small class="form-hint">비밀번호를 변경할 때만 입력하세요.</small>
+          </div>
+          <div class="form-group">
+            <label for="profile-new-password">새 비밀번호</label>
+            <input type="password" id="profile-new-password" name="new_password" placeholder="새 비밀번호" autocomplete="new-password">
+          </div>
+          <div class="form-group">
+            <label for="profile-new-password-confirm">새 비밀번호 확인</label>
+            <input type="password" id="profile-new-password-confirm" name="new_password_confirm" placeholder="새 비밀번호 확인" autocomplete="new-password">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary btn--block">저장</button>
+          <a href="{{ url_for('main.index') }}" class="btn btn--outline btn--block" style="margin-top: 12px; text-align: center; text-decoration: none;">취소</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/auth-profile-page.js') }}"></script>
+{% endblock %}

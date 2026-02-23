@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}#{{ tag }} - WeTube{% endblock %}
+
+{% block content %}
+  <div class="tag-page">
+    <!-- 인기 태그 (DB 연동) -->
+    {% if popular_tags %}
+    <div class="popular-tags-section">
+      <h2 class="popular-tags-title">인기 태그</h2>
+      <div class="popular-tags">
+        {% for t in popular_tags %}
+        <a href="{{ url_for('main.tag', tag_name=t.name) }}" class="tag-pill {% if tag == t.name %}active{% endif %}">#{{ t.name }}</a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- 태그별 영상 리스트 (DB 연동) -->
+    <div class="tag-results">
+      <div class="tag-results-header">
+        <h1 class="tag-results-title">#{{ tag }}</h1>
+        <p class="tag-results-count"><strong>{{ results_count }}</strong>개의 동영상</p>
+      </div>
+
+      <div class="tag-video-grid">
+        {% for video in videos or [] %}
+        <article class="video-card">
+          <a href="{{ url_for('main.watch', video_id=video.id) }}" class="video-card-link">
+            <div class="video-card-thumb">
+              {% if video.get_thumbnail_url() %}
+              <img src="{{ video.get_thumbnail_url() }}" alt="" class="video-card-thumb-img">
+              {% else %}
+              <span>📹</span>
+              {% endif %}
+            </div>
+            <h3 class="video-card-title">{{ video.title }}</h3>
+          </a>
+          <a href="{{ url_for('main.user_profile', username=video.user.username if video.user else 'default') }}" class="video-card-channel">{{ video.user.username if video.user else 'default' }}</a>
+          <p class="video-card-meta">조회수 {{ video.views }}회 · 좋아요 {{ video.likes|default(0) }}</p>
+          <a href="{{ url_for('main.tag', tag_name=tag) }}" class="video-card-tag">#{{ tag }}</a>
+        </article>
+        {% else %}
+        <p class="tag-empty">"#{{ tag }}" 태그가 붙은 동영상이 없습니다.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+{% endblock %}

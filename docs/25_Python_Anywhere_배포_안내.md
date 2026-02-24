@@ -43,8 +43,8 @@ python3 -m venv venv
 # 가상환경 활성화
 source venv/bin/activate
 
-# 의존성 설치 (Python 3.10 호환)
-pip install -r requirements-py310.txt
+# 의존성 설치 (기존 requirements.txt 사용)
+pip install -r requirements.txt
 ```
 
 ---
@@ -77,6 +77,8 @@ DATABASE_URL=sqlite:////home/lsy37092/Wetube/instance/wetube.db
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
+# 프록시 경유 시 (Connection refused 시): http://proxy.server:3128
+# CLOUDINARY_API_PROXY=
 
 # Flask 모드
 FLASK_ENV=production
@@ -99,8 +101,26 @@ python -c "import secrets; print(secrets.token_hex(32))"
 
 1. PA 대시보드 → **Web** 탭
 2. **Add a new web app** 클릭
-3. **Manual configuration** 선택
-4. **Python 3.10** (또는 최신) 선택
+3. **경로 설정 화면 (Quickstart 선택 시)**  
+   - "Quickstart new Flask project"를 선택하면 경로 입력 화면이 표시됩니다.  
+   - **Path** 필드 기본값: `/home/lsy37092/mysite/flask_app.py`  
+   - 안내 문구: "Enter a path for a Python file you wish to use to hold your Flask app. If this file already exists, its contents will be overwritten with the new app."
+4. **WeTube는 기존 프로젝트**이므로 **Manual configuration**을 선택하세요.  
+   (Quickstart는 새 flask_app.py를 생성하여 기존 Wetube 구조를 덮어씁니다)
+5. **Python 3.10** (또는 최신) 선택
+
+### 5-1-1. 경로 설정 예시 (flask run 사용 시)
+
+로컬에서 `flask run`으로 실행 중이라면 구조는 다음과 같습니다.
+
+| 구분 | 경로 |
+|------|------|
+| **프로젝트 루트** | `/home/lsy37092/Wetube` |
+| **Flask 앱 패키지** | `/home/lsy37092/Wetube/app` |
+| **WSGI 진입 파일** | `/home/lsy37092/Wetube/wsgi.py` |
+
+- `flask run` ↔ `FLASK_APP=app` → `app/__init__.py`의 `app` 객체 사용  
+- PA에서는 **Manual configuration** 후 WSGI에 프로젝트 경로(`/home/lsy37092/Wetube`)를 넣고 `from app import app as application`으로 로드
 
 ### 5-2. 가상환경 경로 지정
 
@@ -206,7 +226,7 @@ with app.app_context():
 cd ~/Wetube
 git pull origin main
 source venv/bin/activate
-pip install -r requirements-py310.txt
+pip install -r requirements.txt
 ```
 
 이후 **Web** 탭에서 **Reload** 클릭
@@ -221,6 +241,7 @@ pip install -r requirements-py310.txt
 | DB 관련 오류 | `DATABASE_URL` 경로, `instance/` 폴더 생성 여부 확인 |
 | 정적 파일 404 | Static files 매핑 추가 |
 | Cloudinary 오류 | `.env` 또는 환경 변수에 API 키/시크릿 정확히 입력 |
+| Connection refused (api.cloudinary.com) | PA 무료는 아웃바운드 제한 있음. 유료 업그레이드 또는 프록시 사용 시 `.env`에 `CLOUDINARY_API_PROXY=http://proxy.server:3128` 추가 |
 | CSRF 오류 | `SECRET_KEY`가 설정되었는지 확인 |
 
 ---

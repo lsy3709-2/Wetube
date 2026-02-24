@@ -2,7 +2,7 @@
 Cloudinary 업로드 헬퍼.
 
 동영상·썸네일을 Cloudinary에 업로드하고 secure_url, public_id 반환.
-.env의 CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET 필요.
+.env: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET. 프록시 시 CLOUDINARY_API_PROXY.
 """
 
 import os
@@ -21,6 +21,20 @@ def _is_cloudinary_configured() -> bool:
     )
 
 
+def _get_cloudinary_config() -> dict:
+    """Cloudinary config 딕셔너리 반환. api_proxy는 .env에 설정 시 사용 (PA 프록시 우회용)."""
+    config = {
+        "cloud_name": os.environ.get("CLOUDINARY_CLOUD_NAME"),
+        "api_key": os.environ.get("CLOUDINARY_API_KEY"),
+        "api_secret": os.environ.get("CLOUDINARY_API_SECRET"),
+        "secure": True,
+    }
+    api_proxy = os.environ.get("CLOUDINARY_API_PROXY", "").strip()
+    if api_proxy:
+        config["api_proxy"] = api_proxy
+    return config
+
+
 def upload_video(file_storage, resource_type: str = "video") -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """
     비디오 파일을 Cloudinary에 업로드.
@@ -36,12 +50,7 @@ def upload_video(file_storage, resource_type: str = "video") -> Tuple[Optional[s
         import cloudinary
         import cloudinary.uploader
 
-        cloudinary.config(
-            cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
-            api_key=os.environ.get("CLOUDINARY_API_KEY"),
-            api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
-            secure=True,
-        )
+        cloudinary.config(**_get_cloudinary_config())
     except ImportError:
         return None, None, "cloudinary 패키지가 설치되지 않았습니다."
 
@@ -87,12 +96,7 @@ def upload_image(file_storage, folder: str = "wetube/thumbnails") -> Tuple[Optio
         import cloudinary
         import cloudinary.uploader
 
-        cloudinary.config(
-            cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
-            api_key=os.environ.get("CLOUDINARY_API_KEY"),
-            api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
-            secure=True,
-        )
+        cloudinary.config(**_get_cloudinary_config())
     except ImportError:
         return None, None, "cloudinary 패키지가 설치되지 않았습니다."
 
@@ -132,12 +136,7 @@ def delete_cloudinary_resource(public_id: str, resource_type: str = "video") -> 
         import cloudinary
         import cloudinary.uploader
 
-        cloudinary.config(
-            cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
-            api_key=os.environ.get("CLOUDINARY_API_KEY"),
-            api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
-            secure=True,
-        )
+        cloudinary.config(**_get_cloudinary_config())
         cloudinary.uploader.destroy(public_id, resource_type=resource_type)
         return True
     except Exception:

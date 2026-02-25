@@ -218,9 +218,54 @@ with app.app_context():
 
 ---
 
-## 10. 업데이트 (재배포)
+## 10. 로컬 → GitHub → Python Anywhere 업데이트 순서
 
-코드 변경 후:
+로컬에서 수정한 코드를 GitHub를 거쳐 Python Anywhere 서버에 반영하는 터미널 명령어 순서입니다.
+
+### 10-1. 로컬 (Windows 등)
+
+```bash
+# 1) 프로젝트 폴더로 이동
+cd c:\Wetube2\ch08
+
+# 2) 변경 사항 확인
+git status
+
+# 3) 변경 파일 스테이징 (전체 시)
+git add .
+
+# 4) 커밋
+git commit -m "작업 내용 요약 메시지"
+
+# 5) GitHub로 푸시
+git push origin main
+```
+
+### 10-2. Python Anywhere 서버
+
+```bash
+# 1) 프로젝트 폴더로 이동
+cd ~/Wetube
+
+# 2) 원격 저장소에서 최신 코드 가져오기
+git pull origin main
+
+# 3) 가상환경 활성화
+source venv/bin/activate
+
+# 4) 의존성 업데이트 (requirements 변경 시)
+pip install -r requirements.txt
+
+# 5) Web 탭에서 Reload 버튼 클릭 (브라우저에서 PA 대시보드 → Web → Reload)
+```
+
+> **Reload**는 PA 웹 화면에서만 가능합니다. 터미널로는 `touch /var/www/lsy37092_pythonanywhere_com_wsgi.py` 등으로 WSGI 파일 갱신 시 재로드될 수 있습니다.
+
+---
+
+## 11. 업데이트 (재배포) 요약
+
+코드 변경 후 PA에서 할 일:
 
 ```bash
 cd ~/Wetube
@@ -233,7 +278,7 @@ pip install -r requirements.txt
 
 ---
 
-## 11. 문제 해결
+## 12. 문제 해결
 
 | 증상 | 확인 사항 |
 |------|-----------|
@@ -246,7 +291,7 @@ pip install -r requirements.txt
 
 ---
 
-## 12. 경로 요약 (lsy37092)
+## 13. 경로 요약 (lsy37092)
 
 | 항목 | 경로 |
 |------|------|

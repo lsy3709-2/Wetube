@@ -3181,6 +3181,25 @@ body:not(.is-admin-logged-in) [data-admin-logged-in-only] {
   gap: 20px;
 }
 
+.admin-section {
+  margin-top: 2rem;
+}
+.admin-section-title {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.admin-more {
+  font-size: 0.9rem;
+  font-weight: normal;
+  color: var(--link-color, #065fd4);
+}
+.admin-more:hover {
+  text-decoration: underline;
+}
+
 .admin-stat-card {
   background: var(--card-bg);
   border: 1px solid var(--border);

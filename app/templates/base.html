@@ -24,7 +24,9 @@
       <div data-logged-in-only>
         <a href="{{ url_for('studio.index') }}" class="btn btn--outline">Studio</a>
         <a href="{{ url_for('main.subscriptions') }}" class="btn btn--outline">구독</a>
-        <a href="{{ url_for('admin.index') }}" class="btn btn--icon" data-admin-only title="관리자" style="{% if not (current_user.is_authenticated and current_user.is_admin) %}display: none;{% endif %}">🛡️</a>
+        {% if current_user.is_authenticated and current_user.is_admin %}
+        <a href="{{ url_for('admin.index') }}" class="btn btn--outline" title="관리자">관리자</a>
+        {% endif %}
         <button type="button" class="btn btn--icon" title="알림">🔔</button>
         <span class="header-email" title="{{ current_user.email }}">{{ current_user.email }}</span>
         <a href="{{ url_for('auth.logout') }}" class="btn btn--outline btn--small header-logout-btn" title="로그아웃">로그아웃</a>

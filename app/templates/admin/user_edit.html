@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}회원 수정 (관리자) - WeTube{% endblock %}
+
+{% block content %}
+  <div class="admin-page">
+    <div class="admin-header">
+      <div class="admin-header-left">
+        <a href="{{ url_for('admin.index') }}" class="admin-back-link">← 관리자</a>
+        <h1 class="admin-title">회원 수정: {{ edit_user.username }}</h1>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <form method="post" action="{{ url_for('admin.user_edit', user_id=edit_user.id) }}" enctype="multipart/form-data" class="auth-form" style="max-width: 480px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label>아이디</label>
+          <input type="text" value="{{ edit_user.username }}" readonly disabled class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="edit-email">이메일 <span class="required">*</span></label>
+          <input type="email" id="edit-email" name="email" value="{{ edit_user.email or '' }}" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-nickname">닉네임</label>
+          <input type="text" id="edit-nickname" name="nickname" value="{{ edit_user.nickname or '' }}" placeholder="닉네임">
+        </div>
+        <div class="form-group">
+          <label>프로필 사진</label>
+          <div class="profile-image-wrapper">
+            <div class="profile-image-preview">
+              {% if edit_user.get_profile_image_url() %}
+              <img src="{{ edit_user.get_profile_image_url() }}" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:50%;">
+              {% else %}
+              <span>사진 없음</span>
+              {% endif %}
+            </div>
+            <input type="file" name="profile_image" accept="image/*">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="edit-new-password">새 비밀번호</label>
+          <input type="password" id="edit-new-password" name="new_password" placeholder="변경 시에만 입력">
+        </div>
+        <div class="form-group">
+          <label for="edit-new-password-confirm">새 비밀번호 확인</label>
+          <input type="password" id="edit-new-password-confirm" name="new_password_confirm" placeholder="변경 시에만 입력">
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn--primary">저장</button>
+          <a href="{{ url_for('admin.index') }}" class="btn btn--outline">취소</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -13,15 +13,16 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
 def _admin_required(f):
-    """관리자 권한 필수. 비로그인 → 로그인, 일반 유저 → 403."""
+    """관리자 권한 필수. 비로그인 → 로그인, 일반 유저 → 메인으로 리다이렉트 + 에러 메시지."""
     from functools import wraps
 
     @wraps(f)
     def wrapped(*args, **kwargs):
         if not current_user.is_authenticated:
             return redirect(url_for("auth.login", next=url_for("admin.index")))
-        if not current_user.is_admin:
-            return render_template("errors/403.html"), 403
+        if not getattr(current_user, "is_admin", False):
+            flash("관리자만 접근할 수 있습니다.", "error")
+            return redirect(url_for("main.index"))
         return f(*args, **kwargs)
 
     return wrapped
@@ -36,21 +37,118 @@ def login():
 @login_required
 @_admin_required
 def index():
-    """관리자 대시보드 – DB 실통계."""
+    """관리자 대시보드 – 통계 + 사용자/비디오/댓글 목록(표 형태, 삭제 버튼)."""
     stats = {
         "user_count": User.query.count(),
         "video_count": Video.query.count(),
-        "channel_count": User.query.count(),  # 사용자 = 채널
-        "comment_count": 0,  # Comment 모델 미구현 시 0
+        "channel_count": User.query.count(),
+        "comment_count": Comment.query.count(),
     }
-    try:
-        from sqlalchemy import text
+    # 통합 관리용 목록 (각 최근 20건)
+    users_list = User.query.order_by(User.created_at.desc()).limit(20).all()
+    videos_list = (
+        Video.query.options(joinedload(Video.user))
+        .order_by(Video.created_at.desc())
+        .limit(20)
+        .all()
+    )
+    comments_list = (
+        Comment.query.options(
+            joinedload(Comment.user),
+            joinedload(Comment.video),
+        )
+        .order_by(Comment.created_at.desc())
+        .limit(20)
+        .all()
+    )
+    return render_template(
+        "admin/admin.html",
+        stats=stats,
+        users_list=users_list,
+        videos_list=videos_list,
+        comments_list=comments_list,
+    )
 
-        r = db.session.execute(text("SELECT COUNT(*) FROM comments")).scalar()
-        stats["comment_count"] = int(r) if r else 0
-    except Exception:
-        pass
-    return render_template("admin/index.html", stats=stats)
+
+@admin_bp.route("/users/<int:user_id>/edit", methods=["GET", "POST"])
+@login_required
+@_admin_required
+def user_edit(user_id):
+    """관리자가 회원 정보 수정 (비밀번호·프로필 이미지·닉네임·이메일)."""
+    user = User.query.get_or_404(user_id)
+    if request.method == "GET":
+        return render_template("admin/user_edit.html", edit_user=user)
+
+    # POST
+    nickname = (request.form.get("nickname") or "").strip() or None
+    email = (request.form.get("email") or "").strip()
+    new_password = request.form.get("new_password") or ""
+    new_password_confirm = request.form.get("new_password_confirm") or ""
+
+    if not email:
+        flash("이메일은 필수입니다.", "error")
+        return render_template("admin/user_edit.html", edit_user=user), 400
+    existing = User.query.filter(User.email == email, User.id != user.id).first()
+    if existing:
+        flash(f"이미 사용 중인 이메일입니다: {email}", "error")
+        return render_template("admin/user_edit.html", edit_user=user), 400
+    if new_password:
+        if new_password != new_password_confirm:
+            flash("새 비밀번호와 확인이 일치하지 않습니다.", "error")
+            return render_template("admin/user_edit.html", edit_user=user), 400
+        if len(new_password) < 4:
+            flash("새 비밀번호는 4자 이상이어야 합니다.", "error")
+            return render_template("admin/user_edit.html", edit_user=user), 400
+        user.set_password(new_password)
+
+    profile_file = request.files.get("profile_image")
+    if profile_file and profile_file.filename:
+        from app.utils.image import validate_image_file
+        allowed_ext = current_app.config.get("ALLOWED_PROFILE_IMAGE_EXTENSIONS", {"jpg", "jpeg", "png", "gif", "webp"})
+        max_size = current_app.config.get("MAX_PROFILE_IMAGE_SIZE", 5 * 1024 * 1024)
+        ok, err_msg = validate_image_file(profile_file, allowed_ext, max_size)
+        if not ok:
+            flash(err_msg, "error")
+            return render_template("admin/user_edit.html", edit_user=user), 400
+        try:
+            from app.routes.auth import _save_profile_image
+            _save_profile_image(profile_file, user)
+        except ValueError as e:
+            flash(str(e), "error")
+            return render_template("admin/user_edit.html", edit_user=user), 400
+
+    user.nickname = nickname
+    user.email = email
+    db.session.commit()
+    flash("회원 정보가 수정되었습니다.", "success")
+    return redirect(url_for("admin.index"))
+
+
+@admin_bp.route("/users/<int:user_id>/delete", methods=["POST"])
+@login_required
+@_admin_required
+def user_delete(user_id):
+    """관리자 회원 삭제. 본인(admin)은 삭제 불가."""
+    if user_id == current_user.id:
+        flash("자기 자신은 삭제할 수 없습니다.", "error")
+        return redirect(url_for("admin.index"))
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash("회원이 삭제되었습니다.", "success")
+    return redirect(url_for("admin.index"))
+
+
+@admin_bp.route("/videos/<int:video_id>/delete", methods=["POST"])
+@login_required
+@_admin_required
+def video_delete(video_id):
+    """관리자 동영상 삭제."""
+    video = Video.query.get_or_404(video_id)
+    db.session.delete(video)
+    db.session.commit()
+    flash("동영상이 삭제되었습니다.", "success")
+    return redirect(url_for("admin.index"))
 
 
 @admin_bp.route("/users")
@@ -147,7 +245,8 @@ def comment_delete(comment_id):
     db.session.delete(comment)
     db.session.commit()
     flash("댓글이 삭제되었습니다.", "success")
-    # 삭제 후 동일 페이지로 리다이렉트 (form hidden 또는 args)
+    if request.form.get("next") == "index":
+        return redirect(url_for("admin.index"))
     page = request.form.get("page") or request.args.get("page", 1)
     q = request.form.get("q") or request.args.get("q", "")
     return redirect(url_for("admin.comments", page=page, q=q))

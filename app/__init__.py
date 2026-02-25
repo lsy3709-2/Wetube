@@ -48,11 +48,18 @@ def create_app():
     default_db_path = os.path.join(project_root, "instance", "wetube.db")
     # Windows에서 백슬래시가 URI로 잘못 해석되지 않도록 슬래시로 통일
     default_db_uri = "sqlite:///" + os.path.normpath(default_db_path).replace("\\", "/")
+    # DATABASE_URL이 PA 등 다른 환경 경로일 때, 로컬에서는 해당 경로가 없으면 기본 경로 사용
+    db_uri = os.environ.get("DATABASE_URL", default_db_uri)
+    if db_uri.startswith("sqlite:///"):
+        db_file_path = db_uri.replace("sqlite:///", "").replace("/", os.sep)
+        db_dir = os.path.dirname(db_file_path)
+        if not os.path.exists(db_dir):
+            db_uri = default_db_uri
     app.config.from_mapping(
         # 세션·flash·CSRF 등 서명용. .env의 SECRET_KEY 사용, 없으면 개발용 고정값.
         SECRET_KEY=os.environ.get("SECRET_KEY", "dev-frontend-only"),
-        # DB: 환경변수 DATABASE_URL 없으면 SQLite (instance/wetube.db)
-        SQLALCHEMY_DATABASE_URI=os.environ.get("DATABASE_URL", default_db_uri),
+        # DB: 환경변수 DATABASE_URL 사용, 단 로컬에서 해당 경로가 없으면 프로젝트 instance/wetube.db
+        SQLALCHEMY_DATABASE_URI=db_uri,
         # 모델 속성 변경 추적 비활성화. True면 변경 시 before_commit 등 이벤트 발생·오버헤드 있음. 불필요하면 False 권장.
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         # 업로드 폴더 (절대 경로)
@@ -171,6 +178,17 @@ def create_app():
                     db.session.commit()
         except Exception:
             db.session.rollback()
+        # users 테이블에 is_admin 컬럼 없으면 추가 (기존 DB 마이그레이션)
+        try:
+            from sqlalchemy import text
+            insp = db.inspect(db.engine)
+            if "users" in insp.get_table_names():
+                user_cols = {c["name"] for c in insp.get_columns("users")}
+                if "is_admin" not in user_cols:
+                    db.session.execute(text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT 0"))
+                    db.session.commit()
+        except Exception:
+            db.session.rollback()
         # user_id=1 이 없으면 업로드 시 DEFAULT_USER_ID(1)를 쓸 수 없으므로 기본 유저 생성
         if db.session.get(User, 1) is None:
             default_user = User(
@@ -179,6 +197,13 @@ def create_app():
             )
             default_user.set_password("default")
             db.session.add(default_user)
+            db.session.commit()
+        # 기본 관리자 계정 admin / admin1234 (없을 때만 생성)
+        admin_user = User.query.filter_by(username="admin").first()
+        if admin_user is None:
+            admin_user = User(username="admin", email="admin@example.com", is_admin=True)
+            admin_user.set_password("admin1234")
+            db.session.add(admin_user)
             db.session.commit()
 
     return app

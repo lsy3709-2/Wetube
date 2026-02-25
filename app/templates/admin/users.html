@@ -57,8 +57,12 @@
                 <span class="status-badge status-active">활성</span>
               </td>
               <td class="col-actions">
-                <a href="{{ url_for('auth.profile') }}" class="btn-icon" title="수정">✏️</a>
-                <button type="button" class="btn-icon btn-icon--danger" title="삭제">🗑️</button>
+                <a href="{{ url_for('admin.user_edit', user_id=user.id) }}" class="btn-icon" title="수정">✏️</a>
+                {% if user.id != current_user.id %}
+                <form method="post" action="{{ url_for('admin.user_delete', user_id=user.id) }}" style="display:inline;" onsubmit="return confirm('이 회원을 삭제하시겠습니까?');">
+                  <button type="submit" class="btn-icon btn-icon--danger" title="삭제">🗑️</button>
+                </form>
+                {% endif %}
               </td>
             </tr>
             {% else %}

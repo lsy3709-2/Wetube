@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}관리자 - WeTube{% endblock %}
+
+{% block content %}
+  <div class="admin-page">
+    <div class="admin-header">
+      <h1 class="admin-title">관리자</h1>
+      <div class="admin-header-actions">
+        <a href="{{ url_for('admin.users') }}" class="btn btn--outline btn--small">사용자 전체</a>
+        <a href="{{ url_for('admin.videos') }}" class="btn btn--outline btn--small">동영상 전체</a>
+        <a href="{{ url_for('admin.comments') }}" class="btn btn--outline btn--small">댓글 전체</a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn--outline">로그아웃</a>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <!-- 통계 -->
+      <div class="admin-stats">
+        <div class="admin-stat-card">
+          <span class="stat-value">{{ stats.user_count|default(0) }}</span>
+          <span class="stat-label">사용자</span>
+        </div>
+        <div class="admin-stat-card">
+          <span class="stat-value">{{ stats.video_count|default(0) }}</span>
+          <span class="stat-label">동영상</span>
+        </div>
+        <div class="admin-stat-card">
+          <span class="stat-value">{{ stats.comment_count|default(0) }}</span>
+          <span class="stat-label">댓글</span>
+        </div>
+      </div>
+
+      <!-- 사용자 목록 -->
+      <section class="admin-section">
+        <h2 class="admin-section-title">사용자 목록 <a href="{{ url_for('admin.users') }}" class="admin-more">전체 보기</a></h2>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>아이디</th>
+                <th>이메일</th>
+                <th>닉네임</th>
+                <th>관리자</th>
+                <th>가입일</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in users_list %}
+              <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.username }}</td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.nickname or '-' }}</td>
+                <td>{% if u.is_admin %}예{% else %}아니오{% endif %}</td>
+                <td>{{ u.created_at.strftime('%Y-%m-%d') if u.created_at else '-' }}</td>
+                <td>
+                  <a href="{{ url_for('admin.user_edit', user_id=u.id) }}" class="btn-icon" title="수정">✏️</a>
+                  {% if u.id != current_user.id %}
+                  <form method="post" action="{{ url_for('admin.user_delete', user_id=u.id) }}" class="admin-delete-form" style="display:inline;" onsubmit="return confirm('이 회원을 삭제하시겠습니까?');">
+                    <button type="submit" class="btn-icon btn-icon--danger" title="삭제">🗑️</button>
+                  </form>
+                  {% endif %}
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="7" class="admin-empty">등록된 사용자가 없습니다.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 동영상 목록 -->
+      <section class="admin-section">
+        <h2 class="admin-section-title">동영상 목록 <a href="{{ url_for('admin.videos') }}" class="admin-more">전체 보기</a></h2>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>제목</th>
+                <th>업로더</th>
+                <th>조회수</th>
+                <th>업로드일</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for v in videos_list %}
+              <tr>
+                <td>{{ v.id }}</td>
+                <td><a href="{{ url_for('main.watch', video_id=v.id) }}">{{ v.title[:40] }}{% if v.title|length > 40 %}...{% endif %}</a></td>
+                <td>{{ v.user.username if v.user else '-' }}</td>
+                <td>{{ v.views }}</td>
+                <td>{{ v.created_at.strftime('%Y-%m-%d') if v.created_at else '-' }}</td>
+                <td>
+                  <form method="post" action="{{ url_for('admin.video_delete', video_id=v.id) }}" class="admin-delete-form" style="display:inline;" onsubmit="return confirm('이 동영상을 삭제하시겠습니까?');">
+                    <button type="submit" class="btn-icon btn-icon--danger" title="삭제">🗑️</button>
+                  </form>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="6" class="admin-empty">등록된 동영상이 없습니다.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 댓글 목록 -->
+      <section class="admin-section">
+        <h2 class="admin-section-title">댓글 목록 <a href="{{ url_for('admin.comments') }}" class="admin-more">전체 보기</a></h2>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>내용</th>
+                <th>작성자</th>
+                <th>동영상</th>
+                <th>작성일</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in comments_list %}
+              <tr>
+                <td>{{ c.id }}</td>
+                <td class="col-content">{{ (c.content or '')[:50] }}{% if (c.content or '')|length > 50 %}...{% endif %}</td>
+                <td>{{ c.user.username if c.user else '-' }}</td>
+                <td>{{ c.video.title[:20] if c.video and c.video.title else '-' }}{% if c.video and c.video.title and c.video.title|length > 20 %}...{% endif %}</td>
+                <td>{{ c.created_at.strftime('%Y-%m-%d %H:%M') if c.created_at else '-' }}</td>
+                <td>
+                  <form method="post" action="{{ url_for('admin.comment_delete', comment_id=c.id) }}" class="admin-delete-form" style="display:inline;" onsubmit="return confirm('이 댓글을 삭제하시겠습니까?');">
+                    <input type="hidden" name="next" value="index">
+                    <button type="submit" class="btn-icon btn-icon--danger" title="삭제">🗑️</button>
+                  </form>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="6" class="admin-empty">등록된 댓글이 없습니다.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+{% endblock %}

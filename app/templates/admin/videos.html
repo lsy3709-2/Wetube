@@ -79,7 +79,7 @@
               </td>
               <td class="col-actions">
                 <a href="{{ url_for('studio.edit', video_id=video.id) }}" class="btn-icon" title="수정">✏️</a>
-                <form method="post" action="{{ url_for('studio.delete', video_id=video.id) }}" style="display: inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                <form method="post" action="{{ url_for('admin.video_delete', video_id=video.id) }}" style="display: inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
                   <button type="submit" class="btn-icon btn-icon--danger" title="삭제">🗑️</button>
                 </form>
               </td>

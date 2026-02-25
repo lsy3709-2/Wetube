@@ -32,7 +32,7 @@ class User(UserMixin, db.Model):
     profile_image_public_id = db.Column(db.String(255), nullable=True) # 클라우드 저장 시 public_id (예: Cloudinary)
 
     # ----- 권한 -----
-    is_admin = db.Column(db.Boolean, nullable=False, default=False)   # 관리자 여부
+    is_admin = db.Column(db.Boolean, nullable=False, default=False)  # 관리자 여부 (기본값 False)
 
     # ----- 타임스탬프 -----
     created_at = db.Column(db.DateTime, default=_utc_now)                    # 최초 생성 시각

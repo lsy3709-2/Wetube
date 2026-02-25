@@ -77,8 +77,9 @@ DATABASE_URL=sqlite:////home/lsy37092/Wetube/instance/wetube.db
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
-# 프록시 경유 시 (Connection refused 시): http://proxy.server:3128
-# CLOUDINARY_API_PROXY=
+# 배포(PA)에서 프록시 사용 시에만 (로컬은 설정하지 말 것):
+# USE_CLOUDINARY_PROXY=1
+# CLOUDINARY_API_PROXY=http://프록시주소:3128
 
 # Flask 모드
 FLASK_ENV=production
@@ -286,7 +287,7 @@ pip install -r requirements.txt
 | DB 관련 오류 | `DATABASE_URL` 경로, `instance/` 폴더 생성 여부 확인 |
 | 정적 파일 404 | Static files 매핑 추가 |
 | Cloudinary 오류 | `.env` 또는 환경 변수에 API 키/시크릿 정확히 입력 |
-| Connection refused (api.cloudinary.com) | PA 무료는 아웃바운드 제한 있음. 유료 업그레이드 또는 프록시 사용 시 `.env`에 `CLOUDINARY_API_PROXY=http://proxy.server:3128` 추가 |
+| Connection refused (api.cloudinary.com) | PA 무료는 아웃바운드 제한 있음. 유료 업그레이드 또는 프록시 사용 시 `.env`에 `USE_CLOUDINARY_PROXY=1` 및 `CLOUDINARY_API_PROXY=http://프록시주소:3128` 추가 (로컬에서는 두 변수 모두 설정하지 않으면 프록시 미사용) |
 | CSRF 오류 | `SECRET_KEY`가 설정되었는지 확인 |
 
 ---

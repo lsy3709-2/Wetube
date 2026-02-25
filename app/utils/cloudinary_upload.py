@@ -2,7 +2,7 @@
 Cloudinary 업로드 헬퍼.
 
 동영상·썸네일을 Cloudinary에 업로드하고 secure_url, public_id 반환.
-.env: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET. 프록시 시 CLOUDINARY_API_PROXY.
+.env: CLOUDINARY_* 필수. 배포에서만 USE_CLOUDINARY_PROXY=1 + CLOUDINARY_API_PROXY.
 """
 
 import os
@@ -21,17 +21,23 @@ def _is_cloudinary_configured() -> bool:
     )
 
 
+def _use_cloudinary_proxy() -> bool:
+    """배포 환경(PA 등)에서만 프록시 사용. 로컬에서는 False."""
+    return os.environ.get("USE_CLOUDINARY_PROXY", "").strip().lower() in ("1", "true", "yes")
+
+
 def _get_cloudinary_config() -> dict:
-    """Cloudinary config 딕셔너리 반환. api_proxy는 .env에 설정 시 사용 (PA 프록시 우회용)."""
+    """Cloudinary config 딕셔너리 반환. api_proxy는 USE_CLOUDINARY_PROXY=1 일 때만 사용 (배포용)."""
     config = {
         "cloud_name": os.environ.get("CLOUDINARY_CLOUD_NAME"),
         "api_key": os.environ.get("CLOUDINARY_API_KEY"),
         "api_secret": os.environ.get("CLOUDINARY_API_SECRET"),
         "secure": True,
     }
-    api_proxy = os.environ.get("CLOUDINARY_API_PROXY", "").strip()
-    if api_proxy:
-        config["api_proxy"] = api_proxy
+    if _use_cloudinary_proxy():
+        api_proxy = os.environ.get("CLOUDINARY_API_PROXY", "").strip()
+        if api_proxy:
+            config["api_proxy"] = api_proxy
     return config
 
 

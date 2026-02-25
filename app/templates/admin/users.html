@@ -60,6 +60,7 @@
                 <a href="{{ url_for('admin.user_edit', user_id=user.id) }}" class="btn-icon" title="수정">✏️</a>
                 {% if user.id != current_user.id %}
                 <form method="post" action="{{ url_for('admin.user_delete', user_id=user.id) }}" style="display:inline;" onsubmit="return confirm('이 회원을 삭제하시겠습니까?');">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn-icon btn-icon--danger" title="삭제">🗑️</button>
                 </form>
                 {% endif %}

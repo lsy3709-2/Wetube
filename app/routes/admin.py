@@ -84,6 +84,7 @@ def user_edit(user_id):
     email = (request.form.get("email") or "").strip()
     new_password = request.form.get("new_password") or ""
     new_password_confirm = request.form.get("new_password_confirm") or ""
+    is_admin_checked = request.form.get("is_admin") in ("1", "on", "yes")
 
     if not email:
         flash("이메일은 필수입니다.", "error")
@@ -119,6 +120,11 @@ def user_edit(user_id):
 
     user.nickname = nickname
     user.email = email
+    # 관리자 여부: 다른 유저는 수정 가능, 자기 자신은 관리자 해제 불가
+    if user.id == current_user.id:
+        user.is_admin = True
+    else:
+        user.is_admin = is_admin_checked
     db.session.commit()
     flash("회원 정보가 수정되었습니다.", "success")
     return redirect(url_for("admin.index"))

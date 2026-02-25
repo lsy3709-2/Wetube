@@ -26,6 +26,15 @@
           <label for="edit-nickname">닉네임</label>
           <input type="text" id="edit-nickname" name="nickname" value="{{ edit_user.nickname or '' }}" placeholder="닉네임">
         </div>
+        <div class="form-group form-group--checkbox">
+          <label class="checkbox-label">
+            <input type="checkbox" name="is_admin" value="1" {% if edit_user.is_admin %}checked{% endif %} {% if edit_user.id == current_user.id %}disabled{% endif %}>
+            관리자 여부
+          </label>
+          {% if edit_user.id == current_user.id %}
+          <small class="form-hint">자기 자신은 관리자 해제할 수 없습니다.</small>
+          {% endif %}
+        </div>
         <div class="form-group">
           <label>프로필 사진</label>
           <div class="profile-image-wrapper">

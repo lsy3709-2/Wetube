@@ -143,8 +143,6 @@
                   {% endif %}
                 </div>
                 <div class="comment-footer">
-                  <button type="button" class="comment-action">👍 {{ c.likes }}</button>
-                  <button type="button" class="comment-action">👎</button>
                   {% if current_user.is_authenticated %}
                   <button type="button" class="comment-action comment-reply-btn" data-parent-id="{{ c.id }}">답글</button>
                   {% endif %}
@@ -186,8 +184,6 @@
                         {% endif %}
                       </div>
                       <div class="comment-footer">
-                        <button type="button" class="comment-action">👍 {{ r.likes }}</button>
-                        <button type="button" class="comment-action">👎</button>
                         {% if current_user.is_authenticated and current_user.id == r.user_id %}
                         <button type="button" class="comment-action comment-edit-btn" data-comment-id="{{ r.id }}">수정</button>
                         <form method="post" action="{{ url_for('comments.delete', comment_id=r.id) }}" class="comment-delete-form" style="display: inline;">

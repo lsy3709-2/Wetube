@@ -190,7 +190,13 @@ def create_app():
         except Exception:
             db.session.rollback()
         # user_id=1 이 없으면 업로드 시 DEFAULT_USER_ID(1)를 쓸 수 없으므로 기본 유저 생성
-        if db.session.get(User, 1) is None:
+        # (이메일/username 중복 시 UNIQUE 오류 방지: 이미 있으면 스킵)
+        default_exists = (
+            db.session.get(User, 1) is not None
+            or User.query.filter_by(username="default").first() is not None
+            or User.query.filter_by(email="default@example.com").first() is not None
+        )
+        if not default_exists:
             default_user = User(
                 username="default",
                 email="default@example.com",
@@ -201,10 +207,12 @@ def create_app():
         # 기본 관리자 계정 admin / admin1234 (없을 때만 생성)
         admin_user = User.query.filter_by(username="admin").first()
         if admin_user is None:
-            admin_user = User(username="admin", email="admin@example.com", is_admin=True)
-            admin_user.set_password("admin1234")
-            db.session.add(admin_user)
-            db.session.commit()
+            # admin@example.com 이 이미 다른 유저에게 있으면 이메일 충돌 방지
+            if User.query.filter_by(email="admin@example.com").first() is None:
+                admin_user = User(username="admin", email="admin@example.com", is_admin=True)
+                admin_user.set_password("admin1234")
+                db.session.add(admin_user)
+                db.session.commit()
 
     return app
 
